@@ -27,23 +27,28 @@ item6 = item.rename(columns={"ItemID":"item6","ItemName" : "ItemSlot6"})
 
 partida = (
     matchstats
-    .merge(champ_enemy, on="EnemyChampionFk", how="left")
+    #primeiro pega o jogador, de onde vem ChampionFk
     .merge(summoner, left_on="SummonerMatchFk", right_on="SummonerMatchId", how="left")
+    #championFk existe
     .merge(champ_player, on="ChampionFk", how="left")
+    #pega o id do champion inimigo
+    .merge(champ_enemy, left_on="EnemyChampionFk", right_on="EnemyChampionFk", how="left")
+    .merge(matchtbl, left_on="MatchFk", right_on="MatchId", how="left")
     .merge(item1, on = "item1", how="left")
     .merge(item2, on = "item2", how="left")
     .merge(item3, on = "item3", how="left")
     .merge(item4, on = "item4", how="left")
     .merge(item5, on = "item5", how="left")
     .merge(item6, on = "item6", how="left")
-    .merge(matchtbl, left_on="MatchFk", right_on="MatchId", how="left")
 )
-
-cols = ["PlayerChampion", "EnemyChampion","ItemSlot1","ItemSlot2","ItemSlot3","ItemSlot4","ItemSlot5","ItemSlot6","QueueType","MinionsKilled"] + [
-    c for c in partida.columns if c not in ["QueueType","ItemSlot1","ItemSlot2","ItemSlot3","ItemSlot4","ItemSlot5","ItemSlot6","MinionsKilled", "PlayerChampion", "EnemyChampion"]
+Cols_Winrate = [
+    "PlayerChampion",
+    "EnemyChampion",
+    "Lane",
+    "Win",
+    "QueueType",
+    "GameDuration"
 ]
 
-
-partida = partida[cols]
-
-partida.head(10)
+cols = [c for c in Cols_Winrate if c in partida.columns]
+partida = partida[cols].copy()
