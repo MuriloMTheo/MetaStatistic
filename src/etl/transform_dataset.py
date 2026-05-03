@@ -1,6 +1,9 @@
 import pandas as pd
 from extract_dataset import path
 
+#Etapa responsável pela transformação dos dados.
+#Mapeamento de campeões pelo id, rota, winrate, duração e itens.
+
 champion = pd.read_csv(path + "/ChampionTbl.csv")
 item = pd.read_csv(path + "/ItemTbl.csv")
 matchstats = pd.read_csv(path + "/MatchStatsTbl.csv")
@@ -52,3 +55,10 @@ Cols_Winrate = [
 
 cols = [c for c in Cols_Winrate if c in partida.columns]
 partida = partida[cols].copy()
+
+#Filtro final aplicando restrição ao queuetype CLASSIC e com duração maior que 15 min
+
+partida = partida[(partida["QueueType"] == "CLASSIC") &
+                  (partida["GameDuration"] > 900)]
+#print(partida.shape)
+#print(partida["QueueType"].value_counts())
