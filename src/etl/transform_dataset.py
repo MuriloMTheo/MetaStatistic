@@ -59,6 +59,14 @@ partida = partida[cols].copy()
 #Filtro final aplicando restrição ao queuetype CLASSIC e com duração maior que 15 min
 
 partida = partida[(partida["QueueType"] == "CLASSIC") &
-                  (partida["GameDuration"] > 900)]
+                  (partida["GameDuration"] > 900) &
+                  (partida["Lane"] != "NONE") &
+                  (partida["Lane"].notna())]
+
+#Corrigindo nome de rotas
+
+partida["Lane"] = partida["Lane"].replace({"UTILITY":"SUPPORT"}) 
+
+
 #print(partida.shape)
 #print(partida["QueueType"].value_counts())
