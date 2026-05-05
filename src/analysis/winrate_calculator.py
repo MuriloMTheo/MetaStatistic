@@ -1,5 +1,6 @@
 import duckdb
 import math
+import pandas as pd
 from src.config.settings import DB_PATH, MIN_GAMES_FOR_TIER
 
 def get_raw_stats (db_path: str):
@@ -23,17 +24,30 @@ def wilson_lower(wins: int, games: int, z: float = 1.96) -> float:
     return round(num / den, 4)  
 
 def calculate_winrate(df):
-    df = df[(df["Games"] > MIN_GAMES_FOR_TIER)]
-    df["Winrate"] = df["Wins"] / df["Games"]
-    df["WilsonScore"] = df.apply(
+    df = df[(df["Games"] > MIN_GAMES_FOR_TIER)] #Apenas se tiver mais que o mínimo de games por tier
+    df["Winrate"] = df["Wins"] / df["Games"] #Calculo WR bruto
+    df["WilsonScore"] = df.apply( #Calculo WR por WilsonScore
         lambda row: wilson_lower(int(row["Wins"]), int(row["Games"])), axis=1
     )
+    return df
+
+def get_tier_champion(df):
+    tier1 = df["WilsonScore"].quantile(0.8)
+    tier2 = df["WilsonScore"].quantile(0.6)
+    tier3 = df["WilsonScore"].quantile(0.4)
+    tier4 = df["WilsonScore"].quantile(0.2)
+
+    #Function Pandas para fazer o corte de forma dinâmica com base nos valores do WR
+    tier = pd.cut(df["WilsonScore"], bins=[-1, tier4, tier3, tier2, tier1, 1], labels=[5, 4, 3, 2, 1])  
+    df["Tier"] = tier
     return df
 
 if __name__ == "__main__": #testelocal
     dfw = get_raw_stats(DB_PATH)
     dfw = calculate_winrate(dfw)
-    print(dfw.head(10))
-
-#print(df[df["PlayerChampion"] == 'Lux'].head())
-#print(df["Lane"].unique())
+    dfw = get_tier_champion(dfw)
+    #print(dfw.head(10))
+    #print(dfw["WilsonScore"].describe())
+    print(dfw[dfw["PlayerChampion"] == 'Ahri'].head())
+    #print(dfw["Lane"].unique())
+    
