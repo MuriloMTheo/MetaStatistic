@@ -1,12 +1,16 @@
 import streamlit as st
 from src.services.tierlist_service import TierListService
+from src.etl.extract_champions_cdn import get_champion_url, get_champion_mapping
 from src.config.settings import TIER_COLORS
 
 st.set_page_config(page_title="Lich Bane Meta", layout="wide")
 
-aba_campeoes, aba_select, aba_skins = st.tabs(
-    ["Campeões", "Champion Select", "Champion Skins"]
-)
+@st.cache_data
+def load_champion_url(champion_name: str):
+    return get_champion_url(champion_name)
+
+#Colunas Principais
+aba_campeoes, aba_select, aba_skins = st.tabs(["Campeões", "Champion Select", "Champion Skins"])
 
 with aba_campeoes:
 
@@ -40,14 +44,18 @@ with aba_campeoes:
 
     df["WilsonScore"] = (df["WilsonScore"] * 100).round(2)
     df = df[["PlayerChampion", "WilsonScore", "Tier"]]
-    df = df.rename(columns={"WilsonScore": "Winrate", "PlayerChampion": "Campeão"})
+    df = df.rename(columns={"WilsonScore": "Winrate"})
 
     for _, row in df.iterrows():
         col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 1, 1])
         with col1:
-            st.write("ícone champ")
+            url = load_champion_url(row["PlayerChampion"])
+            if url:
+                st.image(url, width=48)
+            else:
+                st.write("?")
         with col2:
-            st.write(row["Campeão"])
+            st.write(row["PlayerChampion"])
         with col3:
             st.write("ícone lane")
         with col4:
