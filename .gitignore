@@ -1,1 +1,3 @@
 __pycache__/
+data/meta_db/*.duckdb
+.env

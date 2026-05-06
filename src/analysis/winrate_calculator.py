@@ -1,15 +1,24 @@
 import duckdb
 import math
 import pandas as pd
-from src.config.settings import DB_PATH, MIN_GAMES_FOR_TIER
+from src.config.settings import DB_PATH, MIN_GAMES_FOR_TIER, MIN_LANE_RATIO
 
 def get_raw_stats (db_path: str):
     con = duckdb.connect(db_path)
 
-    df = con.execute("""
-        SELECT PlayerChampion, Lane, Count(*) AS Games, SUM(Win) AS Wins
-        FROM PARTIDAS_GERAL
-        GROUP BY PlayerChampion, Lane              
+    df = con.execute(f"""
+        SELECT *
+        FROM (
+            SELECT
+                PlayerChampion,
+                Lane,
+                COUNT(*) AS Games,
+                SUM(Win) AS Wins,
+                COUNT(*) * 1.0 / SUM(COUNT(*)) OVER (PARTITION BY PlayerChampion) AS Ratio
+            FROM PARTIDAS_GERAL
+            GROUP BY PlayerChampion, Lane
+        ) t
+        WHERE Ratio >= {MIN_LANE_RATIO}          
     """).df()
 
     con.close()
@@ -41,6 +50,13 @@ def get_tier_champion(df):
     tier = pd.cut(df["WilsonScore"], bins=[-1, tier4, tier3, tier2, tier1, 1], labels=[5, 4, 3, 2, 1])  
     df["Tier"] = tier
     return df
+
+def winrate_orchestrator() -> pd.DataFrame:
+#Função responsável por orquestrar todos as outras na chamada
+    dfw = get_raw_stats(DB_PATH)
+    dfw = calculate_winrate(dfw)
+    dfw = get_tier_champion(dfw)
+    return dfw
 
 if __name__ == "__main__": #testelocal
     dfw = get_raw_stats(DB_PATH)
