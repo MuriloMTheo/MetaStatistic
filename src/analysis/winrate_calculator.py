@@ -46,7 +46,7 @@ def get_tier_champion(df):
     tier3 = df["WilsonScore"].quantile(0.4)
     tier4 = df["WilsonScore"].quantile(0.2)
 
-    #Function Pandas para fazer o corte de forma dinâmica com base nos valores do WR
+    #Função do Pandas para fazer o corte de forma dinâmica com base nos valores do WR
     tier = pd.cut(df["WilsonScore"], bins=[-1, tier4, tier3, tier2, tier1, 1], labels=[5, 4, 3, 2, 1])  
     df["Tier"] = tier
     return df
@@ -64,6 +64,7 @@ if __name__ == "__main__": #testelocal
     dfw = get_tier_champion(dfw)
     #print(dfw.head(10))
     #print(dfw["WilsonScore"].describe())
-    print(dfw[dfw["PlayerChampion"] == 'Ahri'].head())
+    #print(dfw["PlayerChampion"].unique())
+    #print(dfw[dfw["PlayerChampion"] == 'Ahri'].head())
     #print(dfw["Lane"].unique())
     
