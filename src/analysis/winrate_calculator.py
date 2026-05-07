@@ -65,6 +65,6 @@ if __name__ == "__main__": #testelocal
     #print(dfw.head(10))
     #print(dfw["WilsonScore"].describe())
     #print(dfw["PlayerChampion"].unique())
-    #print(dfw[dfw["PlayerChampion"] == 'Ahri'].head())
+    #print(dfw[dfw["PlayerChampion"] == 'Lux'].head())
     #print(dfw["Lane"].unique())
     
