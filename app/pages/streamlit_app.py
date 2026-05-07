@@ -140,7 +140,8 @@ with aba_campeoes:
             with col4:
                 st.write(f"{row['Winrate']}%")
             with col5:
-                st.write(row["Tier"])
+                color = TIER_COLORS.get(int(row["Tier"]), "#ffffff")
+                st.markdown(f"<span style='color: {color}; font-weight: bold;'>TIER {int(row['Tier'])}</span>", unsafe_allow_html=True)
 
 with aba_select:
     st.write("aq vai o champion select")
