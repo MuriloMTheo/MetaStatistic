@@ -42,7 +42,7 @@ def get_champion_rules() -> dict:
 #print(json.dumps(eve, indent=4, ensure_ascii=False))
 
 #rules = get_champion_rules()
-#print(json.dumps(rules["Lux"], indent=4, ensure_ascii=False))
+#print(json.dumps({"Teemo": rules["Teemo"], "Ahri": rules["Ahri"]}, indent=4, ensure_ascii=False))
 
 #for champ in ["Yasuo", "Lux", "Jax", "MissFortune", "Thresh"]:
     #print(champ, rules.get(champ))
