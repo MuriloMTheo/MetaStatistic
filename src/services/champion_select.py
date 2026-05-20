@@ -21,6 +21,8 @@ def build_ally_team_profile(champions: list[str]):
                 ally_team["qntAd"] += 1
             ally_team["classes"].extend(rules[champ]["Class"])
 
+    return ally_team
+
 def build_enemy_team_profile(champions: list[str]):
     rules = get_champion_rules()
 
@@ -39,3 +41,5 @@ def build_enemy_team_profile(champions: list[str]):
                 enemy_team["qntAp"] += 1
                 enemy_team["qntAd"] += 1
             enemy_team["classes"].extend(rules[champ]["Class"])
+
+    return enemy_team
