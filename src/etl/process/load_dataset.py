@@ -1,8 +1,6 @@
 import duckdb
-from transform_dataset import partida
 
-
-def load():
+def load(partida):
 #Etapa responsável por abrir o banco e inserir os dados tratados    
     con = duckdb.connect("data/meta_db/lol.duckdb")
     con.execute("DROP TABLE IF EXISTS PARTIDAS_GERAL")

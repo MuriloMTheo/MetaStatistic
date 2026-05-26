@@ -1,6 +1,6 @@
 import streamlit as st
 from src.services.tierlist_service import TierListService
-from src.etl.extract_champions_cdn import get_champion_url
+from src.etl.extract_champions_infos import get_champion_url
 from src.config.settings import TIER_COLORS
 
 st.set_page_config(page_title="Lich Bane Meta", layout="wide")

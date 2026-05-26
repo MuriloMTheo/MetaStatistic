@@ -1,5 +1,4 @@
 import requests
-import json
 
 def get_champion_mapping() -> dict: 
     url = "https://ddragon.leagueoflegends.com/cdn/14.24.1/data/pt_BR/champion.json"
