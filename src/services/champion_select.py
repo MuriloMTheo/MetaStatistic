@@ -1,4 +1,4 @@
-from src.etl.extract_champions_cdn import get_champion_rules
+from src.etl.extract_champions_infos import get_champion_rules
 
 def build_ally_team_profile(champions: list[str]):
     rules = get_champion_rules()
