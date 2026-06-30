@@ -1,6 +1,7 @@
 import streamlit as st
 from src.services.tierlist_service import TierListService
-from src.etl.extract_champions_infos import get_champion_url
+from src.etl.extract_champions_infos import get_champion_url,get_champion_rules
+from src.services.champion_select import build_ally_team_profile, build_enemy_team_profile
 from src.config.settings import TIER_COLORS
 
 st.set_page_config(page_title="Lich Bane Meta", layout="wide")
@@ -144,7 +145,102 @@ with aba_campeoes:
                 st.markdown(f"<span style='color: {color}; font-weight: bold;'>TIER {int(row['Tier'])}</span>", unsafe_allow_html=True)
 
 with aba_select:
-    st.write("aq vai o champion select")
+    st.set_page_config(page_title="Recomendador de Campeão", layout="wide")
+
+    ROLES = {
+        "top": "Topo",
+        "jungle": "Selva",
+        "mid": "Meio",
+        "adc": "Atirador",
+        "support": "Suporte",
+    }
+
+    NENHUM = "Nenhum"
+
+    @st.cache_data(show_spinner="Carregando dados dos campeões...")
+    def champion_options(rules: dict) -> list[str]:
+    # Função para retornar uma lista de opções de campeões disponíveis para select
+        return [NENHUM] + sorted(rules.keys())
+
+    if "confirmed" not in st.session_state:
+        st.session_state.confirmed = False
+
+    rules = get_champion_rules()
+    champs_options = champion_options(rules)
+
+    st.title("🎯 Recomendador de Campeão")
+    st.caption("Escolha sua rota e preencha o que já sabe sobre as outras 9 posições.")
+
+    user_role = st.selectbox(
+        "Escolha sua rota:",
+        options=list(ROLES.keys()),
+        format_func=lambda key: ROLES[key],
+        key="user_role",
+    )
+
+    st.divider()
+
+    col_ally, col_enemy = st.columns(2)
+
+    ally_champs: dict[str, str] = {}
+    enemy_champs: dict[str, str] = {}
+
+    with col_ally:
+        st.subheader("🔵 Time Aliado")
+        for role_key, role_label in ROLES.items():
+            if role_key == user_role:
+                st.text_input(
+                    f"{role_label} (sua rota)",
+                    value="— a recomendar —",
+                    disabled=True,
+                    key=f"ally_{role_key}_locked",
+                )
+                continue
+
+            ally_champs[role_key] = st.selectbox(
+                role_label,
+                options=champs_options,
+                key=f"ally_{role_key}",
+            )
+
+    with col_enemy:
+        st.subheader("🔴 Time Inimigo")
+        for role_key, role_label in ROLES.items():
+            enemy_champs[role_key] = st.selectbox(
+                role_label,
+                options=champs_options,
+                key=f"enemy_{role_key}",
+            )
+
+    st.divider()
+
+    filled_others = [c for c in (*ally_champs.values(), *enemy_champs.values()) if c != NENHUM]
+
+    if st.button("Confirmar", type="primary", use_container_width=True):
+        if not filled_others:
+            st.error("Selecione pelo menos um campeão em alguma das outras 9 posições.")
+            st.session_state.confirmed = False
+        else:
+            st.session_state.confirmed = True
+
+    if st.session_state.confirmed: #Lógica pós confirmar os campeões
+        ally_list = [c for c in ally_champs.values() if c != NENHUM]
+        enemy_list = [c for c in enemy_champs.values() if c != NENHUM]
+        rival_champion = enemy_champs.get(user_role)
+        rival_champion = rival_champion if rival_champion != NENHUM else None
+
+        ally_profile = build_ally_team_profile(ally_list, rival_champion=rival_champion)
+        enemy_profile = build_enemy_team_profile(enemy_list)
+
+        st.success(f"Rota selecionada: **{ROLES[user_role]}**") #Apresenta o que foi escolhido
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.markdown("**Perfil do time aliado**")
+            st.json(ally_profile)
+        with col_b:
+            st.markdown("**Perfil do time inimigo**")
+            st.json(enemy_profile)
 
 with aba_skins:
     st.write("Aq vai skin")

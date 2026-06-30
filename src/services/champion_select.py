@@ -1,6 +1,6 @@
 from src.etl.extract_champions_infos import get_champion_rules
 
-def build_ally_team_profile(champions: list[str]):
+def build_ally_team_profile(champions: list[str], rival_champion: str | None = None):
     rules = get_champion_rules()
 
     ally_team = {
@@ -20,6 +20,9 @@ def build_ally_team_profile(champions: list[str]):
                 ally_team["qntAp"] += 1
                 ally_team["qntAd"] += 1
             ally_team["classes"].extend(rules[champ]["Class"])
+
+    if rival_champion and rival_champion in rules:
+        ally_team["rival_range"] = rules[rival_champion]["Range"]
 
     return ally_team
 
