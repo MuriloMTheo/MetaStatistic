@@ -1,6 +1,6 @@
 import streamlit as st
 from src.services.tierlist_service import TierListService
-from src.etl.extract_champions_infos import get_champion_url,get_champion_rules
+from src.etl.extract_champions_infos import get_champion_mapping, get_champion_rules
 from src.services.champion_select import build_ally_team_profile, build_enemy_team_profile
 from src.config.settings import TIER_COLORS
 
@@ -83,10 +83,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-@st.cache_data
-def load_champion_url(champion_name: str):
-    return get_champion_url(champion_name)
 
+load_champion_url = get_champion_mapping()
 #Colunas Principais
 aba_campeoes, aba_select, aba_skins = st.tabs(["Campeões", "Champion Select", "Champion Skins"])
 
@@ -129,11 +127,11 @@ with aba_campeoes:
         with st.container(border=True):
             col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 1, 1])
             with col1:
-                url = load_champion_url(row["PlayerChampion"])
+                url = load_champion_url.get(row["PlayerChampion"])
                 if url:
                     st.image(url, width=48)
                 else:
-                    st.write("?")
+                    st.empty()
             with col2:
                 st.write(row["PlayerChampion"])
             with col3:

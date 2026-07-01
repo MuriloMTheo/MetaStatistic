@@ -1,14 +1,14 @@
 import src.analysis.winrate_calculator as wc
 
 class TierListService:
-    def get_tier_list(self, position: str):
+    def __init__(self):
+        self.df = wc.winrate_orchestrator()
 
-        df = wc.winrate_orchestrator()
+    def get_tier_list(self, position):
         if position == "ALL":
-            return df.sort_values(by="WilsonScore", ascending=False)
-        return df[(df["Lane"] == position)].sort_values(by="WilsonScore", ascending=False)
-    
-if __name__ == "__main__":
-    service = TierListService()
-    df = service.get_tier_list("SUPPORT")
-    print(df.head(50))
+            return self.df.sort_values(by="WilsonScore", ascending=False)
+
+        return self.df[self.df["Lane"] == position].sort_values(
+            by="WilsonScore",
+            ascending=False
+        )
