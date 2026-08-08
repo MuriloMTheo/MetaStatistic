@@ -9,3 +9,12 @@ TIER_COLORS = {
     4: "#D6D0CA",
     5: "#885E4B",
 }
+
+CLASS_LACKS_PRIORITY = {
+    "Tank": ["Tank","Fighter"],
+    "Fighter": ["Fighter", "Tank"],
+    "Mage": ["Mage"],
+    "Assassin": ["Assassin","Tank","Fighter","Mage"],
+    "Marksman": ["Marksman"],
+    "Support": ["Support", "Mage"]
+}

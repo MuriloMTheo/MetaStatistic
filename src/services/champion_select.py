@@ -1,12 +1,13 @@
 from src.etl.extract_champions_infos import get_champion_rules
 
-def build_ally_team_profile(champions: list[str], rival_champion: str | None = None):
+def build_ally_team_profile(champions: list[str], player_role, rival_champion: str | None = None):
     rules = get_champion_rules()
 
     ally_team = {
         "qntAp": 0, #Somatória de quantos Ap tem no time aliado.
         "qntAd": 0, #Somatória de quantos Ad tem no time aliado.
         "classes":[], #Classes que seu time possui.
+        "player_role": player_role,
         "rival_range": None #Apenas quando existir preenchimento para o laner rival ao que o user selecionou.
     }
 

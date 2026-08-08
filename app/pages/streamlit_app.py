@@ -227,7 +227,7 @@ with aba_select:
         rival_champion = enemy_champs.get(user_role)
         rival_champion = rival_champion if rival_champion != NENHUM else None
 
-        ally_profile = build_ally_team_profile(ally_list, rival_champion=rival_champion)
+        ally_profile = build_ally_team_profile(ally_list, user_role, rival_champion=rival_champion)
         enemy_profile = build_enemy_team_profile(enemy_list)
 
         st.success(f"Rota selecionada: **{ROLES[user_role]}**") #Apresenta o que foi escolhido
