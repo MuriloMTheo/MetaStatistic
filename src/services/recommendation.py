@@ -56,3 +56,30 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
             filtered_df = df  #fallback
     else:
         filtered_df = df
+
+    # Função de Recomendação -> 2- Verificação da classe.
+    recommended_classes = []
+    for cls in missing_classes:
+        recommended_classes.extend(CLASS_LACKS_PRIORITY[cls])
+    recommended_classes = list(set(recommended_classes))
+    # Aplicando Lambda pois Class é uma lista, isin direto NÃO compararia nesse caso.
+    filtered_df = filtered_df[filtered_df["Class"].apply(lambda classes: any(c in recommended_classes for c in classes))]
+
+    return damage_filter, recommended_classes, missing_classes
+
+if __name__ == "__main__":
+    #testee: ambos os times preenchidos
+    ally = {
+        "qntAp": 2,
+        "qntAd": 0,
+        "classes": ["Mage", "Support"],
+        "rival_range": "Ranged"
+    }
+    enemy = {
+        "qntAp": 1,
+        "qntAd": 3,
+        "classes": ["Tank", "Fighter", "Tank", "Marksman"]
+    }
+
+    result = recommend_champions("jungle", ally, enemy)
+    print(result)
