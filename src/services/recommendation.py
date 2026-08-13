@@ -65,7 +65,23 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
     # Aplicando Lambda pois Class é uma lista, isin direto NÃO compararia nesse caso.
     filtered_df = filtered_df[filtered_df["Class"].apply(lambda classes: any(c in recommended_classes for c in classes))]
 
-    return damage_filter, recommended_classes, missing_classes
+    # Função de Recomendação -> 3- Verificação de range.
+    if user_role != "adc" and ally_profile["rival_range"]:
+        rival_range = ally_profile["rival_range"]
+        opposite_range = "Melee" if rival_range == "Ranged" else "Ranged"
+
+        range_filtered_df = filtered_df[filtered_df["Range"] == opposite_range]
+
+        if not range_filtered_df.empty:
+            best_range_score = range_filtered_df["WilsonScore"].max() # Busca pelo melhor WR para o range filtrado.
+            percentile_75 = filtered_df["WilsonScore"].quantile(0.75) # Retorna o valor do WR mínimo para estar entre os melhores 25%.
+
+            if best_range_score >= percentile_75: # Se o melhor WR for maior que o mínimo para estar entre os 25%, entra.
+                    filtered_df = range_filtered_df
+        else:
+            filtered_df
+    #return damage_filter, recommended_classes, missing_classes
+    return filtered_df
 
 if __name__ == "__main__":
     #testee: ambos os times preenchidos
