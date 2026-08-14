@@ -64,7 +64,11 @@ def transform_data(path):
 
     #Corrigindo nome de rotas
 
-    partida["Lane"] = partida["Lane"].replace({"UTILITY":"SUPPORT"}) 
+    partida["Lane"] = partida["Lane"].replace({
+    "UTILITY": "SUPPORT",
+    "BOTTOM": "ADC",
+    "MIDDLE": "MID"})
+    
     return partida
 
 #print(partida.shape)

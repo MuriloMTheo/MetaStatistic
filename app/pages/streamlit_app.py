@@ -107,10 +107,10 @@ with aba_campeoes:
                 st.session_state.position = "JUNGLE"
         with mid:
             if st.button("MID"):
-                st.session_state.position = "MIDDLE"
+                st.session_state.position = "MID"
         with adc:
             if st.button("ADCARRY"):
-                st.session_state.position = "BOTTOM"
+                st.session_state.position = "ADC"
         with sup:
             if st.button("SUPORTE"):
                 st.session_state.position = "SUPPORT"
