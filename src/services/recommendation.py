@@ -66,7 +66,7 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
         filtered_df = filtered_df[filtered_df["Class"].apply(lambda classes: any(c in recommended_classes for c in classes))]
 
         # Função de Recomendação -> 3- Verificação de range.
-        if user_role != "Adc" and ally_profile["rival_range"]:
+        if user_role.upper() != "ADC" and ally_profile["rival_range"]:
             rival_range = ally_profile["rival_range"]
             opposite_range = "Melee" if rival_range == "Ranged" else "Ranged"
 
@@ -80,6 +80,8 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
                         filtered_df = range_filtered_df
             else:
                 filtered_df
+        elif user_role.upper() == "ADC":
+            filtered_df = filtered_df[filtered_df["Range"] == "Ranged"]
 
         return  missing_classes, filtered_df
     except Exception as e:
@@ -88,18 +90,18 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
 if __name__ == "__main__":
     #testee: ambos os times preenchidos
     ally = {
-        "qntAp": 2,
-        "qntAd": 0,
+        "qntAp": 1,
+        "qntAd": 1,
         "classes": ["Mage", "Support"],
         "rival_range": "Ranged"
     }
     enemy = {
-        "qntAp": 1,
-        "qntAd": 3,
+        "qntAp": 2,
+        "qntAd": 2,
         "classes": ["Tank", "Fighter", "Tank", "Marksman"]
     }
 
-    result = recommend_champions("Adc", ally, enemy)
+    result = recommend_champions("mid", ally, enemy)
     print(result)
 
     #service = TierListService()
