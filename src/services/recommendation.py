@@ -79,11 +79,12 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
                 if best_range_score >= percentile_75: # Se o melhor WR for maior que o mínimo para estar entre os 25%, entra.
                         filtered_df = range_filtered_df
             else:
-                filtered_df
+                filtered_df = filtered_df
         elif user_role.upper() == "ADC":
-            filtered_df = filtered_df[filtered_df["Range"] == "Ranged"]
+            exception_champ = ["Nilah"]
+            filtered_df = filtered_df[filtered_df["Class"].apply(lambda classes: "Marksman" in classes) | filtered_df["PlayerChampion"].isin(exception_champ)]
 
-        return  missing_classes, filtered_df
+        return filtered_df
     except Exception as e:
         print(f'Erro ao executar a função recommend_champions: {e}')
 
@@ -101,7 +102,7 @@ if __name__ == "__main__":
         "classes": ["Tank", "Fighter", "Tank", "Marksman"]
     }
 
-    result = recommend_champions("mid", ally, enemy)
+    result = recommend_champions("adc", ally, enemy)
     print(result)
 
     #service = TierListService()
