@@ -1,5 +1,6 @@
 import streamlit as st
 from src.services.tierlist_service import TierListService
+from src.services.recommendation import recommend_champions
 from src.etl.extract_champions_infos import get_champion_mapping, get_champion_rules
 from src.services.champion_select import build_ally_team_profile, build_enemy_team_profile
 from src.config.settings import TIER_COLORS
@@ -84,7 +85,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-load_champion_url = get_champion_mapping()
+@st.cache_data
+def load_champion_mapping():
+    return get_champion_mapping()
+
+load_champion_url = load_champion_mapping()
 #Colunas Principais
 aba_campeoes, aba_select, aba_skins = st.tabs(["Campeões", "Champion Select", "Champion Skins"])
 
@@ -116,8 +121,11 @@ with aba_campeoes:
                 st.session_state.position = "SUPPORT"
 
     # st.write(st.session_state.position)
-    service = TierListService()
-    df = service.get_tier_list(st.session_state.position)
+    @st.cache_data
+    def load_tier_list(position: str):
+        service = TierListService()
+        return service.get_tier_list(position)
+    df = load_tier_list(st.session_state.position)
 
     df["WilsonScore"] = (df["WilsonScore"] * 100).round(2)
     df = df[["PlayerChampion", "WilsonScore", "Tier", "Lane"]]
@@ -142,6 +150,12 @@ with aba_campeoes:
                 color = TIER_COLORS.get(int(row["Tier"]), "#ffffff")
                 st.markdown(f"<span style='color: {color}; font-weight: bold;'>TIER {int(row['Tier'])}</span>", unsafe_allow_html=True)
 
+@st.cache_data(show_spinner="Carregando dados dos campeões...")
+def load_rules():
+    return get_champion_rules()
+
+rules = load_rules()
+
 with aba_select:
     st.set_page_config(page_title="Recomendador de Campeão", layout="wide")
 
@@ -163,7 +177,6 @@ with aba_select:
     if "confirmed" not in st.session_state:
         st.session_state.confirmed = False
 
-    rules = get_champion_rules()
     champs_options = champion_options(rules)
 
     st.title("🎯 Recomendador de Campeão")
@@ -239,6 +252,30 @@ with aba_select:
         with col_b:
             st.markdown("**Perfil do time inimigo**")
             st.json(enemy_profile)
+
+        desc_champ_recommend, top_3_champ_recommend = recommend_champions(user_role, ally_profile, enemy_profile)
+
+        st.divider()
+        st.subheader("Campeões Recomendados")
+        st.caption(desc_champ_recommend)
+
+        for champ in top_3_champ_recommend:
+            icon_url = load_champion_url.get(champ['Champion'])
+
+            col_icon, col_info = st.columns([1, 5])
+
+            with col_icon:
+                st.image(icon_url, width=72)
+
+            with col_info:
+                st.markdown(f"### {champ['Champion']}")
+                st.markdown(
+                    f"🏅 **Tier {champ['Tier']}** &nbsp;|&nbsp; "
+                    f"⚔️ **{champ['Dano']}** &nbsp;|&nbsp; "
+                    f"📈 **WinRate:** {round(champ['Winrate'] * 100, 1)}%"
+                )
+
+            st.divider()
 
 with aba_skins:
     st.write("Aq vai skin")
