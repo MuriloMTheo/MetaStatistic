@@ -21,6 +21,8 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
 
         damage_filter = None
 
+        choice_desc = ""
+
         if has_ally and has_enemy:
             # Olha o que falta no aliado mas sobra no inimigo
             missing_classes = [cls for cls in CLASS_LACKS_PRIORITY if cls not in ally_profile["classes"] and cls in enemy_profile["classes"]]
@@ -29,8 +31,10 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
 
             if ally_lacks_ad and not ally_lacks_ap:
                 damage_filter = "AD"
+                choice_desc = "Time aliado possui MENOS dano AD que o time inimigo - Escolha de dano AD."
             elif ally_lacks_ap and not ally_lacks_ad:
                 damage_filter = "AP"
+                choice_desc = "Time aliado possui MENOS dano AP que o time inimigo - Escolha de dano AP."
 
         elif has_ally:
             # Só olha o que falta no aliado
@@ -40,15 +44,17 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
                 damage_filter = "AD"
             elif ally_profile["qntAp"] == 0:
                 damage_filter = "AP"
+            choice_desc = f'Time aliado não possui dano {damage_filter} - Escolha de dano {damage_filter}.'
 
         elif has_enemy:
-            # Recomenda o oposto do que o inimigo tem mais
+            # Recomenda o que o inimigo tem mais
             missing_classes = [cls for cls in CLASS_LACKS_PRIORITY if cls not in enemy_profile["classes"]]        
 
             if enemy_profile["qntAd"] > enemy_profile["qntAp"]:
                 damage_filter = "AD"
             elif enemy_profile["qntAp"] > enemy_profile["qntAd"]:
                 damage_filter = "AP"
+            choice_desc = f'Time inimigo possui mais dano {damage_filter} - Escolha de dano {damage_filter}.'
         
         if damage_filter:
             filtered_df = df[df["Attack"].isin([damage_filter, "Misto"])]
@@ -56,6 +62,7 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
                 filtered_df = df
         else:
             filtered_df = df
+            choice_desc = "Sem atribuição ao filtro de tipagem de dano - Provável quantidade igual em ambos os times. "
 
         # Função de Recomendação -> 2- Verificação da classe.
         recommended_classes = []
@@ -64,6 +71,7 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
         recommended_classes = list(set(recommended_classes))
         # Aplicando Lambda pois Class é uma lista, isin direto NÃO compararia nesse caso.
         filtered_df = filtered_df[filtered_df["Class"].apply(lambda classes: any(c in recommended_classes for c in classes))]
+        choice_desc += f" Classes ausentes no time aliado: {missing_classes}. Classes recomendadas: {recommended_classes}."
 
         # Função de Recomendação -> 3- Verificação de range.
         if user_role.upper() != "ADC" and ally_profile["rival_range"]:
@@ -78,21 +86,27 @@ def recommend_champions(user_role: str, ally_profile: dict, enemy_profile: dict)
 
                 if best_range_score >= percentile_75: # Se o melhor WR for maior que o mínimo para estar entre os 25%, entra.
                         filtered_df = range_filtered_df
+                        choice_desc += " Filtro de range aplicado."
             else:
                 filtered_df = filtered_df
         elif user_role.upper() == "ADC":
             exception_champ = ["Nilah"]
             filtered_df = filtered_df[filtered_df["Class"].apply(lambda classes: "Marksman" in classes) | filtered_df["PlayerChampion"].isin(exception_champ)]
 
-        return filtered_df
+        recommend_champions_top3 = filtered_df.nlargest(3, "WilsonScore")[["PlayerChampion", "Tier", "WilsonScore", "Attack"]].rename(columns={
+            "PlayerChampion": "Champion",
+            "WilsonScore": "Winrate",
+            "Attack": "Dano"}).to_dict(orient="records")
+
+        return choice_desc, recommend_champions_top3
     except Exception as e:
         print(f'Erro ao executar a função recommend_champions: {e}')
 
 if __name__ == "__main__":
     #testee: ambos os times preenchidos
     ally = {
-        "qntAp": 1,
-        "qntAd": 1,
+        "qntAp": 0,
+        "qntAd": 2,
         "classes": ["Mage", "Support"],
         "rival_range": "Ranged"
     }
@@ -102,7 +116,7 @@ if __name__ == "__main__":
         "classes": ["Tank", "Fighter", "Tank", "Marksman"]
     }
 
-    result = recommend_champions("adc", ally, enemy)
+    result = recommend_champions("jungle", ally, enemy)
     print(result)
 
     #service = TierListService()
